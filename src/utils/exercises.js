@@ -305,105 +305,199 @@ export const exercises = [
         "test": (assert) => assert
           .$custom(code => {
 
-            if (!code.replace(/\s/g, '').trim().includes("edad=") && !code.replace(/\s/g, '').trim().includes("age=")) {
-              return [{
-                es: "Debes crearse una variable 'edad' que almacene el valor ingresado por el usuario como entero.",
-                en: "A variable 'age' that stores the value entered by the user as an integer must be created.",
-                pt: "Uma variável 'edad' que armazena o valor inserido pelo usuário como inteiro deve ser criada."
-              }]
-            } else if (code.replace(/\s/g, '').trim().includes("edad=int(input(") || code.replace(/\s/g, '').trim().includes("edad=input(")) {
+            // if (!code.replace(/\s/g, '').trim().includes("edad=") && !code.replace(/\s/g, '').trim().includes("age=")) {
+            //   return [{
+            //     es: "Debes crearse una variable 'edad' que almacene el valor ingresado por el usuario como entero.",
+            //     en: "A variable 'age' that stores the value entered by the user as an integer must be created.",
+            //     pt: "Uma variável 'edad' que armazena o valor inserido pelo usuário como inteiro deve ser criada."
+            //   }]
+            // } else if (code.replace(/\s/g, '').trim().includes("edad=int(input(") || code.replace(/\s/g, '').trim().includes("edad=input(")) {
 
-              const lineasInput = code.match(/input\(["'].*?["']\)/g);
-              // console.log(lineasInput[0]);
+            //   const lineasInput = code.match(/input\(["'].*?["']\)/g);
+            //   // console.log(lineasInput[0]);
 
-              const preguntaEs = lineasInput[0].match(/["'](.*?)["']/)?.[1]; // Extraer el texto de la preguntaEs
-              if (preguntaEs.length < 1) {
-                return [{
-                  es: "El input no debe estar vacío, debes solicitar al usuario que ingrese su edad.",
-                  en: "The input must not be empty, you must ask the user to enter their age.",
-                  pt: "A entrada não deve estar vazia, você deve pedir ao usuário para inserir sua idade."
-                }]
-              }
-              if (preguntaEs) {
-                const contieneEdadOAnios = /edad|años/i.test(preguntaEs);
-                if (!contieneEdadOAnios) {
-                  seguirValidando = false
-                  // console.log("La pregunta del input no es válida porque no menciona 'edad' o 'años'.");
-                  return [{
-                    es: 'La pregunta del input "' + preguntaEs + '" no es válida porque no menciona "edad" o "años".',
-                    en: 'The input question ' + preguntaEs + ' is not valid because it does not mention "age" or "years".',
-                    pt: 'A pergunta do input ' + preguntaEs + ' não é válida porque não menciona "idade" ou "anos".'
-                  }]
-                }
+            //   const preguntaEs = lineasInput[0].match(/["'](.*?)["']/)?.[1]; // Extraer el texto de la preguntaEs
+            //   if (preguntaEs.length < 1) {
+            //     return [{
+            //       es: "El input no debe estar vacío, debes solicitar al usuario que ingrese su edad.",
+            //       en: "The input must not be empty, you must ask the user to enter their age.",
+            //       pt: "A entrada não deve estar vazia, você deve pedir ao usuário para inserir sua idade."
+            //     }]
+            //   }
+            //   if (preguntaEs) {
+            //     const contieneEdadOAnios = /edad|años/i.test(preguntaEs);
+            //     if (!contieneEdadOAnios) {
+            //       seguirValidando = false
+            //       // console.log("La pregunta del input no es válida porque no menciona 'edad' o 'años'.");
+            //       return [{
+            //         es: 'La pregunta del input "' + preguntaEs + '" no es válida porque no menciona "edad" o "años".',
+            //         en: 'The input question ' + preguntaEs + ' is not valid because it does not mention "age" or "years".',
+            //         pt: 'A pergunta do input ' + preguntaEs + ' não é válida porque não menciona "idade" ou "anos".'
+            //       }]
+            //     }
 
-              }
-            } else {
-              if (code.replace(/\s/g, '').trim().includes("age=int(input(") || code.replace(/\s/g, '').trim().includes("age=input(")) {
+            //   }
+            // } else {
+            //   if (code.replace(/\s/g, '').trim().includes("age=int(input(") || code.replace(/\s/g, '').trim().includes("age=input(")) {
 
-                const lineasInput = code.match(/input\(["'].*?["']\)/g);
-                // console.log(lineasInput[0]);
+            //     const lineasInput = code.match(/input\(["'].*?["']\)/g);
+            //     // console.log(lineasInput[0]);
 
-                const preguntaEn = lineasInput[0].match(/["'](.*?)["']/)?.[1]; // Extraer el texto de la preguntaEn
-                if (preguntaEn.length < 1) {
-                  return [{
-                    es: "El input no debe estar vacío, debes solicitar al usuario que ingrese su edad.",
-                    en: "The input must not be empty, you must ask the user to enter their age.",
-                    pt: "A entrada não deve estar vazia, você deve pedir ao usuário para inserir sua idade."
-                  }]
-                }
-                if (preguntaEn) {
-                  const contieneEdadOAnios = /age|old/i.test(preguntaEn);
-                  if (!contieneEdadOAnios) {
-                    seguirValidando = false
-                    // console.log("La pregunta del input no es válida porque no menciona 'edad' o 'años'.");
-                    return [{
-                      es: 'La pregunta del input "' + preguntaEn + '" no es válida porque no menciona "edad" o "años".',
-                      en: 'The input question ' + preguntaEn + ' is not valid because it does not mention "age" or "old".',
-                      pt: 'A pergunta do input ' + preguntaEn + ' não é válida porque não menciona "idade" ou "anos".'
-                    }]
-                  }
-                }
-              } else {
-                return [{
-                  es: "Debe solicitar al usuario que ingrese su edad.",
-                  en: "You must ask the user to enter their age.",
-                  pt: "Você deve pedir ao usuário para inserir sua idade."
-                }]
-              }
-            }
+            //     const preguntaEn = lineasInput[0].match(/["'](.*?)["']/)?.[1]; // Extraer el texto de la preguntaEn
+            //     if (preguntaEn.length < 1) {
+            //       return [{
+            //         es: "El input no debe estar vacío, debes solicitar al usuario que ingrese su edad.",
+            //         en: "The input must not be empty, you must ask the user to enter their age.",
+            //         pt: "A entrada não deve estar vazia, você deve pedir ao usuário para inserir sua idade."
+            //       }]
+            //     }
+            //     if (preguntaEn) {
+            //       const contieneEdadOAnios = /age|old/i.test(preguntaEn);
+            //       if (!contieneEdadOAnios) {
+            //         seguirValidando = false
+            //         // console.log("La pregunta del input no es válida porque no menciona 'edad' o 'años'.");
+            //         return [{
+            //           es: 'La pregunta del input "' + preguntaEn + '" no es válida porque no menciona "edad" o "años".',
+            //           en: 'The input question ' + preguntaEn + ' is not valid because it does not mention "age" or "old".',
+            //           pt: 'A pergunta do input ' + preguntaEn + ' não é válida porque não menciona "idade" ou "anos".'
+            //         }]
+            //       }
+            //     }
+            //   } else {
+            //     return [{
+            //       es: "Debe solicitar al usuario que ingrese su edad.",
+            //       en: "You must ask the user to enter their age.",
+            //       pt: "Você deve pedir ao usuário para inserir sua idade."
+            //     }]
+            //   }
+            // }
 
-            if (!code.replace(/\s/g, '').trim().includes("edadFutura=edad+18") && !code.replace(/\s/g, '').trim().includes("edadFutura=int(edad)+18") && !code.replace(/\s/g, '').trim().includes("futureAge=age+18") && !code.replace(/\s/g, '').trim().includes("futureAge=int(age)+18") && !code.replace(/\s/g, '').trim().includes("edadFutura=18+edad") && !code.replace(/\s/g, '').trim().includes("edadFutura=18+int(edad)") && !code.replace(/\s/g, '').trim().includes("futureAge=18+age") && !code.replace(/\s/g, '').trim().includes("futureAge=18+int(age)")) {
-              return [{
-                es: "Debes crearse una variable llamada edadFutura que sume la 'edad' del usuario mas 18.",
-                en: "A variable called futureAge that adds the user's 'age' plus 18 must be created.",
-                pt: "Uma variável chamada futureAge que adiciona a 'idade' do usuário mais 18 deve ser criada."
-              }]
-            } else if (!code.replace(/\s/g, '').trim().includes('print("Tuedaddentrode18añosserá:"+str(edadFutura))') && !code.replace(/\s/g, '').trim().includes('print("Youragedin18yearswillbe:"+str(futureAge))') && !code.replace(/\s/g, '').trim().includes("print('Tuedaddentrode18añosserá:'+str(edadFutura))") && !code.replace(/\s/g, '').trim().includes("print('Youragedin18yearswillbe:'+str(futureAge))")) {
-              return [{
-                es: "Debes imprimir un mensaje que contenga 'edadFutura' convertida a texto.",
-                en: "A message containing 'futureAge' converted to text must be printed.",
-                pt: "Uma mensagem contendo 'edadFutura' convertida para texto deve ser impressa."
-              }]
-            }
+            // if (!code.replace(/\s/g, '').trim().includes("edadFutura=edad+18") && !code.replace(/\s/g, '').trim().includes("edadFutura=int(edad)+18") && !code.replace(/\s/g, '').trim().includes("futureAge=age+18") && !code.replace(/\s/g, '').trim().includes("futureAge=int(age)+18") && !code.replace(/\s/g, '').trim().includes("edadFutura=18+edad") && !code.replace(/\s/g, '').trim().includes("edadFutura=18+int(edad)") && !code.replace(/\s/g, '').trim().includes("futureAge=18+age") && !code.replace(/\s/g, '').trim().includes("futureAge=18+int(age)")) {
+            //   return [{
+            //     es: "Debes crearse una variable llamada edadFutura que sume la 'edad' del usuario mas 18.",
+            //     en: "A variable called futureAge that adds the user's 'age' plus 18 must be created.",
+            //     pt: "Uma variável chamada futureAge que adiciona a 'idade' do usuário mais 18 deve ser criada."
+            //   }]
+            // } else if (!code.replace(/\s/g, '').trim().includes('print("Tuedaddentrode18añosserá:"+str(edadFutura))') && !code.replace(/\s/g, '').trim().includes('print("Youragedin18yearswillbe:"+str(futureAge))') && !code.replace(/\s/g, '').trim().includes("print('Tuedaddentrode18añosserá:'+str(edadFutura))") && !code.replace(/\s/g, '').trim().includes("print('Youragedin18yearswillbe:'+str(futureAge))")) {
+            //   return [{
+            //     es: "Debes imprimir un mensaje que contenga 'edadFutura' convertida a texto.",
+            //     en: "A message containing 'futureAge' converted to text must be printed.",
+            //     pt: "Uma mensagem contendo 'edadFutura' convertida para texto deve ser impressa."
+            //   }]
+            // }
 
           })
       },
     ],
+    // validations: [
+    //   { type: "input_exists" },   // Se espera que use input()
+
+    //   {
+    //     type: "input_value", mockInputs: [["25"]], expectedOutputs: ["Tu edad dentro de 18 años será: 43"],
+    //     feedbackTemplate: (inputs, expected, actual) =>
+    //       `Si el usuario ingresa la edad ${inputs[0]}, deberías mostrar "${expected}", pero tu código mostró: "${actual}".`
+    //   },
+
+    //   { type: "variable_exists", name: ["edad", "edadFutura"] },   // Variables requeridas
+
+    //   // Usamos como mock la edad = 25 → edadFutura debería valer 43
+    //   { type: "variable_value", name: "edad", value: 25 },
+    //   { type: "variable_value", name: "edadFutura", value: 43 },
+    // ]
+
+
+    //REAL COMO ESTAVA ANTES
+    // "validationCodeSimulator": {
+    //   "description": "Al ingresar una edad, el programa debería responder con la edad que tendrás dentro de 18 años.",
+    //   "test": ($) => {
+    //     $.input("¿Qué edad tienes? ", "25").catch({
+    //       es: "Se debería solicitar al usuario que ingrese su edad.",
+    //       en: "The user should be prompted to enter their age.",
+    //       pt: "O usuário deve ser solicitado a inserir sua idade.",
+    //     });
+    //     $.print("Tu edad dentro de 18 años será: 43").catch({
+    //       es: "Se debería imprimir el mensaje 'Tu edad dentro de 18 años será: 43' si la edad ingresada es 25.",
+    //       en: "The message 'Tu edad dentro de 18 años será: 43' should be printed if the entered age is 25.",
+    //       pt: "A mensagem 'Tu edad dentro de 18 anos será: 43' deve ser impressa se a idade inserida for 25.",
+    //     });
+    //   }
+    // },
+
+    //MEJORAS PROPUESTAS
     "validationCodeSimulator": {
-      "description": "Al ingresar una edad, el programa debería responder con la edad que tendrás dentro de 18 años.",
+      "description": "Al ingresar una edad, el programa debería responder con la edad que tendrás dentro de 18 años, usando funciones, listas, diccionarios y módulos.",
       "test": ($) => {
+        $.variableExists(["edad", "age", "idade"]).catch({
+          es: "Se esperaba que se definiera una variable para la edad.",
+          en: "Expected a variable for the age.",
+          pt: "Esperava-se uma variável para a idade.",
+        });
+        $.variableExists(["edadFutura", "futureAge", "idadeFutura"]).catch({
+          es: "Se esperaba que se definiera una variable para la edad futura.",
+          en: "Expected a variable for the future age.",
+          pt: "Esperava-se uma variável para a idade futura.",
+        });
         $.input("¿Qué edad tienes? ", "25").catch({
           es: "Se debería solicitar al usuario que ingrese su edad.",
           en: "The user should be prompted to enter their age.",
           pt: "O usuário deve ser solicitado a inserir sua idade.",
+        });
+        $.binOp(["edad", "age", "idade"], "+", 18).catch({
+          es: "Se esperaba una operación que sumara la edad más 18.",
+          en: "Expected an operation adding age + 18.",
+          pt: "Esperava-se uma operação que somasse idade + 18.",
         });
         $.print("Tu edad dentro de 18 años será: 43").catch({
           es: "Se debería imprimir el mensaje 'Tu edad dentro de 18 años será: 43' si la edad ingresada es 25.",
           en: "The message 'Tu edad dentro de 18 años será: 43' should be printed if the entered age is 25.",
           pt: "A mensagem 'Tu edad dentro de 18 anos será: 43' deve ser impressa se a idade inserida for 25.",
         });
+        $.functionExists(["calcular_edad_futura", "calculate_future_age", "calcular_idade_futura"]).catch({
+          es: "Se esperaba que se definiera una función para calcular la edad futura.",
+          en: "Expected a function to calculate the future age.",
+          pt: "Esperava-se uma função para calcular a idade futura.",
+        });
+        $.ifStructure(["edad", "age", "idade"], ">=", 16).catch({
+          es: "Se esperaba una estructura if que verificara si la edad es mayor o igual a 16.",
+          en: "Expected an if structure checking if age is greater than or equal to 16.",
+          pt: "Esperava-se uma estrutura if verificando se a idade é maior ou igual a 16.",
+        });
+        $.loopStructure("for").catch({
+          es: "Se esperaba una estructura de repetición for.",
+          en: "Expected a for loop structure.",
+          pt: "Esperava-se uma estrutura de repetição for.",
+        });
+        $.loopStructure("while").catch({
+          es: "Se esperaba una estructura de repetición while.",
+          en: "Expected a while loop structure.",
+          pt: "Esperava-se uma estrutura de repetição while.",
+        });
+        // $.functionCall("calcular_edad_futura", [25], 43).catch({
+        //   es: "Se esperaba que se llamara a la función 'calcular_edad_futura' con 25 y devolviera 43.",
+        //   en: "Expected 'calcular_edad_futura' to be called with 25 and return 43.",
+        //   pt: "Esperava-se que 'calcular_edad_futura' fosse chamada com 25 e retornasse 43.",
+        // });
+
+        $.moduleUsage("math", "floor").catch({
+          es: "Se esperaba que se usara el módulo 'math' y su función 'floor'.",
+          en: "Expected the module 'math' and its 'floor' function to be used.",
+          pt: "Esperava-se que o módulo 'math' e sua função 'floor' fossem usados.",
+        });
+
+        // $.list([25, 43], "Debe crearse una lista con la edad actual y la futura.").catch({
+        //   es: "Se esperaba que se creara una lista con [25, 43].",
+        //   en: "Expected a list with [25, 43] to be created.",
+        //   pt: "Esperava-se que uma lista com [25, 43] fosse criada.",
+        // });
+
+        // $.dict({ actual: 25, futura: 43 }, "Debe crearse un diccionario con edad actual y futura.").catch({
+        //   es: "Se esperaba que se creara un diccionario con {'actual': 25, 'futura': 43}.",
+        //   en: "Expected a dictionary with {'actual': 25, 'futura': 43} to be created.",
+        //   pt: "Esperava-se que um dicionário com {'actual': 25, 'futura': 43} fosse criado.",
+        // });
       }
     }
+
   },
   {
     "id": "modulo-01",
@@ -511,6 +605,19 @@ export const exercises = [
       }
 
     ],
+    // validations: [   // 👈 esto es lo nuevo (más flexible)
+    //   { type: "uses_library", name: "random" },
+
+    //   { type: "variable_exists", name: ["num1", "num2","num3","num4","num5"] },
+    //   {
+    //     type: "prints_group",
+    //     prints: [
+    //       { textIncludes: "5.0" },
+    //       { textIncludes: "8.181818181818182" },
+    //       { textIncludes: "La densidad total es: 13.181818181818182" }
+    //     ]
+    //   },
+    // ]
 
   },
   {
@@ -644,84 +751,135 @@ export const exercises = [
     ]
 
   },
+  // {
+  //   "id": "funciones-01",
+  //   "prompt": "Realiza las tareas según la Actividad 01.",
+  //   "mainEditor": "main.py",
+  //   "packages": [],
+  //   "editors": {
+  //     "main.py": {
+  //       "code": "",
+  //       "isReadOnly": false
+  //     }
+  //   },
+  //   "validationAST": [
+  //     {
+  //       "description": "El código debe definir una función llamada 'calcular_densidad' que reciba dos argumentos: 'masa' y 'volumen'.",
+  //       "test": (assert) => assert
+  //         .$custom(code => {
+  //           if (!code.replace(/\s/g, '').trim().includes("defcalcular_densidad(masa,volumen):") && !code.replace(/\s/g, '').trim().includes("defcalculate_density(mass,volume):")) {
+  //             return [{
+  //               es: "Debes definir una función llamada 'calcular_densidad' que reciba dos argumentos: 'masa' y 'volumen'.",
+  //               en: "You must define a function called 'calculate_density' that receives two arguments: 'mass' and 'volume'.",
+  //               pt: "Você deve definir uma função chamada 'calcular_densidade' que receba dois argumentos: 'massa' e 'volume'."
+
+  //             }]
+  //           } else if (!code.replace(/\s/g, '').trim().includes("defcalcular_densidad(masa,volumen):returnmasa/volumen") && !code.replace(/\s/g, '').trim().includes("defcalculate_density(mass,volume):returnmass/volume")) {
+  //             return [{
+  //               es: "La función 'calcular_densidad' debe retornar la división de 'masa' entre 'volumen'.",
+  //               en: "The 'calculate_density' function must return the division of 'mass' by 'volume'.",
+  //               pt: "A função 'calcular_densidade' deve retornar a divisão de 'massa' por 'volume'."
+  //             }]
+  //           } else if (!code.replace(/\s/g, '').trim().includes("densidad1=calcular_densidad(10,2)") && !code.replace(/\s/g, '').trim().includes("density1=calculate_density(10,2)")) {
+  //             return [{
+  //               es: "Debe calcular y guardar en 'densidad1' la densidad de un objeto de masa 10 kg y volumen 2 m³.",
+  //               en: "It must calculate and store in 'density1' the density of an object with mass 10 kg and volume 2 m³.",
+  //               pt: "Deve calcular e armazenar em 'densidade1' a densidade de um objeto com massa de 10 kg e volume de 2 m³."
+  //             }]
+  //           } else if (!code.includes("print(densidad1)") && !code.includes("print(density1)")) {
+  //             return [{
+  //               es: "Luego de calcular y guardar el resultado en la variable 'densidad1', debes mostrar su valor por consola.",
+  //               en: "After calculating and storing the result in the 'density1' variable, you must display its value in the console.",
+  //               pt: "Após calcular e armazenar o resultado na variável 'densidade1', você deve exibir seu valor no console."
+  //             }]
+  //           } else if (!code.replace(/\s/g, '').trim().includes("densidad2=calcular_densidad(270,33)") && !code.replace(/\s/g, '').trim().includes("density2=calculate_density(270,33)")) {
+  //             return [{
+  //               es: "Debe calcular y guardar en 'densidad2' la densidad de un objeto de masa 270 kg y volumen 33 m³.",
+  //               en: "It must calculate and store in 'density2' the density of an object with mass 270 kg and volume 33 m³.",
+  //               pt: "Deve calcular e armazenar em 'densidade2' a densidade de um objeto com massa de 270 kg e volume de 33 m³."
+  //             }]
+  //           } else if (!code.includes("print(densidad2)") && !code.includes("print(density2)")) {
+  //             return [{
+  //               es: "Luego de calcular y guardar el resultado en la variable 'densidad2', debes mostrar su valor por consola.",
+  //               en: "After calculating and storing the result in the 'density2' variable, you must display its value in the console.",
+  //               pt: "Após calcular e armazenar o resultado na variável 'densidade2', você deve exibir seu valor no console."
+  //             }]
+  //           }
+  //           // else if (!code.replace(/\s/g, '').trim().includes("print('Ladensidadtotales:'+str(densidad1+densidad2)") && !code.replace(/\s/g, '').trim().includes('print("Ladensidadtotales:"+str(densidad1+densidad2)') && !code.replace(/\s/g, '').trim().includes("print('Thetotaldensityis:'+str(density1+density2)") && !code.replace(/\s/g, '').trim().includes('print("Thetotaldensityis:"+str(density1+density2)')) {
+  //           //   return [{
+  //           //     es: 'Debes sumar ambas densidades y mostrarlas con el texto "La densidad total es: _____ ".',
+  //           //     en: 'You must add both densities and display them with the text "The total density is: _____ ".',
+  //           //     pt: 'Você deve adicionar ambas as densidades e exibi-las com o texto "A densidade total é: _____ ".'
+  //           //   }]
+  //           // }
+  //         })
+
+
+  //     }
+  //   ],
+  //   validations: [   // 👈 esto es lo nuevo (más flexible)
+  //     { type: "function_exists", name: "calcular_densidad" },
+
+  //     {
+  //       type: "prints_group",
+  //       prints: [
+  //         { textIncludes: "5.0" },
+  //         { textIncludes: "8.181818181818182" },
+  //         { textIncludes: "La densidad total es: 13.181818181818182" }
+  //       ]
+  //     },
+  //     { type: "variable_exists", name: ["densidad1", "densidad2"] }
+  //   ]
+  // },
   {
-    "id": "funciones-01",
-    "prompt": "Realiza las tareas según la Actividad 01.",
-    "mainEditor": "main.py",
-    "packages": [],
-    "editors": {
+    id: "funciones-01",
+    prompt: "Realiza las tareas según la Actividad 01.",
+    mainEditor: "main.py",
+    packages: [],
+    editors: {
       "main.py": {
-        "code": "",
-        "isReadOnly": false
+        code: "",
+        isReadOnly: false
       }
     },
-    "validationAST": [
-      {
-        "description": "El código debe definir una función llamada 'calcular_densidad' que reciba dos argumentos: 'masa' y 'volumen'.",
-        "test": (assert) => assert
-          .$custom(code => {
-            if (!code.replace(/\s/g, '').trim().includes("defcalcular_densidad(masa,volumen):") && !code.replace(/\s/g, '').trim().includes("defcalculate_density(mass,volume):")) {
-              return [{
-                es: "Debes definir una función llamada 'calcular_densidad' que reciba dos argumentos: 'masa' y 'volumen'.",
-                en: "You must define a function called 'calculate_density' that receives two arguments: 'mass' and 'volume'.",
-                pt: "Você deve definir uma função chamada 'calcular_densidade' que receba dois argumentos: 'massa' e 'volume'."
-
-              }]
-            } else if (!code.replace(/\s/g, '').trim().includes("defcalcular_densidad(masa,volumen):returnmasa/volumen") && !code.replace(/\s/g, '').trim().includes("defcalculate_density(mass,volume):returnmass/volume")) {
-              return [{
-                es: "La función 'calcular_densidad' debe retornar la división de 'masa' entre 'volumen'.",
-                en: "The 'calculate_density' function must return the division of 'mass' by 'volume'.",
-                pt: "A função 'calcular_densidade' deve retornar a divisão de 'massa' por 'volume'."
-              }]
-            } else if (!code.replace(/\s/g, '').trim().includes("densidad1=calcular_densidad(10,2)") && !code.replace(/\s/g, '').trim().includes("density1=calculate_density(10,2)")) {
-              return [{
-                es: "Debe calcular y guardar en 'densidad1' la densidad de un objeto de masa 10 kg y volumen 2 m³.",
-                en: "It must calculate and store in 'density1' the density of an object with mass 10 kg and volume 2 m³.",
-                pt: "Deve calcular e armazenar em 'densidade1' a densidade de um objeto com massa de 10 kg e volume de 2 m³."
-              }]
-            } else if (!code.includes("print(densidad1)") && !code.includes("print(density1)")) {
-              return [{
-                es: "Luego de calcular y guardar el resultado en la variable 'densidad1', debes mostrar su valor por consola.",
-                en: "After calculating and storing the result in the 'density1' variable, you must display its value in the console.",
-                pt: "Após calcular e armazenar o resultado na variável 'densidade1', você deve exibir seu valor no console."
-              }]
-            } else if (!code.replace(/\s/g, '').trim().includes("densidad2=calcular_densidad(270,33)") && !code.replace(/\s/g, '').trim().includes("density2=calculate_density(270,33)")) {
-              return [{
-                es: "Debe calcular y guardar en 'densidad2' la densidad de un objeto de masa 270 kg y volumen 33 m³.",
-                en: "It must calculate and store in 'density2' the density of an object with mass 270 kg and volume 33 m³.",
-                pt: "Deve calcular e armazenar em 'densidade2' a densidade de um objeto com massa de 270 kg e volume de 33 m³."
-              }]
-            } else if (!code.includes("print(densidad2)") && !code.includes("print(density2)")) {
-              return [{
-                es: "Luego de calcular y guardar el resultado en la variable 'densidad2', debes mostrar su valor por consola.",
-                en: "After calculating and storing the result in the 'density2' variable, you must display its value in the console.",
-                pt: "Após calcular e armazenar o resultado na variável 'densidade2', você deve exibir seu valor no console."
-              }]
-            }
-            // else if (!code.replace(/\s/g, '').trim().includes("print('Ladensidadtotales:'+str(densidad1+densidad2)") && !code.replace(/\s/g, '').trim().includes('print("Ladensidadtotales:"+str(densidad1+densidad2)') && !code.replace(/\s/g, '').trim().includes("print('Thetotaldensityis:'+str(density1+density2)") && !code.replace(/\s/g, '').trim().includes('print("Thetotaldensityis:"+str(density1+density2)')) {
-            //   return [{
-            //     es: 'Debes sumar ambas densidades y mostrarlas con el texto "La densidad total es: _____ ".',
-            //     en: 'You must add both densities and display them with the text "The total density is: _____ ".',
-            //     pt: 'Você deve adicionar ambas as densidades e exibi-las com o texto "A densidade total é: _____ ".'
-            //   }]
-            // }
-          })
-
-
-      }
-    ],
-    validations: [   // 👈 esto es lo nuevo (más flexible)
+    validations: [
       { type: "function_exists", name: "calcular_densidad" },
-
+      { type: "variable_exists", name: ["densidad1", "densidad2"] },
       {
-        type: "prints_group",
-        prints: [
-          { textIncludes: "5.0" },
-          { textIncludes: "8.181818181818182" },
-          { textIncludes: "La densidad total es: 13.181818181818182" }
-        ]
+        type: "argument_test",
+        argumentSets: [
+          {
+            args1: [10, 2],
+            args2: [12, 2],
+            expectedTotal: "La densidad total es 11",
+            variablePlaceholders: {
+              var1: "__mock_result1__",
+              var2: "__mock_result2__"
+            }
+          },
+          {
+            args1: [8, 4],
+            args2: [15, 3],
+            expectedTotal: "La densidad total es 9",
+            variablePlaceholders: {
+              var1: "__mock_result1__",
+              var2: "__mock_result2__"
+            }
+          },
+          {
+            args1: [6, 3],
+            args2: [18, 6],
+            expectedTotal: "La densidad total es 5",
+            variablePlaceholders: {
+              var1: "__mock_result1__",
+              var2: "__mock_result2__"
+            }
+          }
+        ],
+        feedbackTemplate: (args1, args2, expected, actual) =>
+          `Si el usuario calcula densidad con (${args1.join(", ")}) y (${args2.join(", ")}), la salida esperada sería "${expected}", pero tu código imprimió "${actual}".`
       },
-      { type: "variable_exists", name: ["densidad1", "densidad2"] }
+
     ]
   },
   {

@@ -1,5 +1,4 @@
 import { Assert } from "./assert.js";
-// const pyodide = require("pyodide");
 
 /**
  * Class representing a code simulator for Python code, using Pyodide.
@@ -44,50 +43,33 @@ export class CodeSimulator {
         let allResults = [];
 
         for (const testCase of testCases) {
-            if(!testCase){
-                continue
-            }
-            if (typeof testCase.test !== 'function' ) {
-                continue;
-            }
-            const assert = new Assert();
+            if (!testCase) continue;
+            if (typeof testCase.test !== 'function') continue;
 
+            const assert = new Assert();
             testCase.test(assert);
+
+            console.log("EXPECTATIONS TO PYTHON:", assert.asPythonDict());
 
             const simulationCode = `
 import builtins
 from io import StringIO
-from typing import List, Dict, Union, Any
+import sys
+import ast
 
-def validate_expectations(expectations: Dict[str, List[Dict[str, Union[str, Any]]]], code: str) -> List[Dict[str, Union[str, Any]]]:
-    """
-    Validates the expectations against the provided code.
-    This function mocks the built-in print and input functions to capture their outputs and inputs
-    during the execution of the provided code. It then compares the captured outputs and inputs against
-    the expected values provided in the expectations dictionary.
-    Args:
-        expectations (Dict[str, List[Dict[str, Union[str, Any]]]]): A dictionary containing the expectations.
-            The dictionary should have a key "expectations" which maps to a list of expectation dictionaries.
-            Each expectation dictionary should have the following keys:
-                - "operation" (str): The operation type, either "print" or "input".
-                - "expected_value" (str): The expected value for the operation.
-        code (str): The code to be executed and validated.
-    Returns:
-        List[Dict[str, Union[str, Any]]]: A list of remaining expectations that were not met during the code execution.
-            Each dictionary in the list will have the same structure as the input expectations.
-    """
+def validate_expectations(expectations, code):
     original_print = builtins.print
     original_input = builtins.input
-    
+
     output = StringIO()
     def mock_print(*args, **kwargs):
         original_print(*args, **kwargs, file=output)
     builtins.print = mock_print
-    
+
     input_values = [exp["expected_value"] for exp in expectations["expectations"] if exp["operation"] == "input"]
     input_index = 0
-    input_called = False  # Track if input is actually called
-    
+    input_called = False
+
     def mock_input(prompt=""):
         nonlocal input_index, input_called
         input_called = True
@@ -96,36 +78,261 @@ def validate_expectations(expectations: Dict[str, List[Dict[str, Union[str, Any]
             input_index += 1
             return value
         return ""
-    
+
     builtins.input = mock_input
-    
+
+    # ---- PRE-ANALISIS con AST ----
+    tree = ast.parse(code)
+
+    remaining_expectations = []
+
+    for exp in expectations["expectations"]:
+        if exp["operation"] == "variable_exists":
+            print("DEBUG: Entrando en variable_exists con expected_value:", exp["expected_value"])
+            expected_names = exp["expected_value"]
+
+            class VariableNameCollector(ast.NodeVisitor):
+                def __init__(self):
+                    self.variable_names = set()
+
+                def visit_Name(self, node):
+                    if isinstance(node.ctx, ast.Store):
+                        self.variable_names.add(node.id)
+                    self.generic_visit(node)
+
+            visitor = VariableNameCollector()
+            visitor.visit(tree)
+
+            print("DEBUG: Variables encontradas en el código:", visitor.variable_names)
+
+            found_match = False
+            for name in expected_names:
+                if name in visitor.variable_names:
+                    found_match = True
+                    break
+
+            if not found_match:
+                remaining_expectations.append(exp)
+
+    # ---- Ejecutar código (exec) ----
+    locals_after_exec = {}
+
+    # ---- prepare function_call mocks ----
+    call_logs = {}
+    def make_mock_function(fname, return_value):
+        def mock_function(*args, **kwargs):
+            if fname not in call_logs:
+                call_logs[fname] = []
+            call_logs[fname].append({"args": args, "kwargs": kwargs})
+            return return_value
+        return mock_function
+
+    for exp in expectations["expectations"]:
+        if exp["operation"] == "function_call":
+            func_name = exp["expected_value"]["functionName"]
+            expected_return = exp["expected_value"]["expectedReturnValue"]
+            globals()[func_name] = make_mock_function(func_name, expected_return)
+
     try:
-        exec(code)
+        exec(code, globals(), locals_after_exec)
     except Exception as e:
         builtins.print = original_print
         builtins.input = original_input
-        return [{"description": f"Error executing code: {e}"}]
-    
-    output_lines = output.getvalue().strip().splitlines()
-    remaining_expectations = []
+        return [{"description": f"Error executing code: {e.__class__.__name__}: {e}"}]
 
-    # Check each expectation in order
+    # ---- validate post-exec expectations ----
+    output_lines = output.getvalue().strip().splitlines()
+
     for exp in expectations["expectations"]:
+        if exp["operation"] in ("variable_exists"):  # ya procesado antes
+            continue
+
         if exp["operation"] == "print":
             if exp["expected_value"] in output_lines:
                 output_lines.remove(exp["expected_value"])
             else:
                 remaining_expectations.append(exp)
+
         elif exp["operation"] == "input":
-            # If the input was called but not matched, just enter a empty string
             if input_called and input_index == 0:
                 input_values.insert(0, "")
-
-            # Check if the input was called and matched the expected value
             if input_called and input_index > 0 and exp["expected_value"] == input_values[input_index - 1]:
-                input_index -= 1  # Adjust index as we already processed this input expectation
+                input_index -= 1
             else:
-                # If the input was not called or did not match, add it to remaining expectations
+                remaining_expectations.append(exp)
+
+        elif exp["operation"] == "function_call":
+            func_name = exp["expected_value"]["functionName"]
+            expected_args = exp["expected_value"]["expectedArguments"]
+            calls = call_logs.get(func_name, [])
+            found_match = False
+            for call in calls:
+                if list(call["args"]) == expected_args:
+                    found_match = True
+                    break
+            if not found_match:
+                remaining_expectations.append(exp)
+
+        elif exp["operation"] == "module_usage":
+            module_name = exp["expected_value"]["moduleName"]
+            expected_usage = exp["expected_value"]["expectedUsage"]
+            if module_name not in sys.modules:
+                remaining_expectations.append(exp)
+                continue
+            module_obj = sys.modules[module_name]
+            if isinstance(expected_usage, list):
+                for attr in expected_usage:
+                    if not hasattr(module_obj, attr):
+                        remaining_expectations.append(exp)
+                        break
+            else:
+                if not hasattr(module_obj, expected_usage):
+                    remaining_expectations.append(exp)
+
+        elif exp["operation"] == "list":
+            expected_list = exp["expected_value"]
+            found_match = False
+            for var_name, value in locals_after_exec.items():
+                if isinstance(value, list) and value == expected_list:
+                    found_match = True
+                    break
+            if not found_match:
+                remaining_expectations.append(exp)
+
+        elif exp["operation"] == "dict":
+            expected_dict = exp["expected_value"]
+            found_match = False
+            for var_name, value in locals_after_exec.items():
+                if isinstance(value, dict) and value == expected_dict:
+                    found_match = True
+                    break
+            if not found_match:
+                remaining_expectations.append(exp)
+
+        elif exp["operation"] == "bin_op":
+            expected_left_names = exp["expected_value"]["leftNames"]
+            expected_operator = exp["expected_value"]["operator"]
+            expected_right_value = exp["expected_value"]["rightValue"]
+
+            class BinOpCollector(ast.NodeVisitor):
+                def __init__(self):
+                    self.found = False
+
+                def visit_BinOp(self, node):
+                    op_type = type(node.op).__name__
+                    operator_map = {
+                        'Add': '+',
+                        'Sub': '-',
+                        'Mult': '*',
+                        'Div': '/',
+                        'FloorDiv': '//',
+                        'Mod': '%',
+                    }
+                    op_symbol = operator_map.get(op_type, None)
+
+                    if (op_symbol == expected_operator and
+                        isinstance(node.left, ast.Name) and
+                        node.left.id in expected_left_names and
+                        isinstance(node.right, ast.Constant) and
+                        node.right.value == expected_right_value):
+                        self.found = True
+
+                    self.generic_visit(node)
+
+            tree = ast.parse(code)
+            visitor = BinOpCollector()
+            visitor.visit(tree)
+
+            if not visitor.found:
+                remaining_expectations.append(exp)
+
+        elif exp["operation"] == "function_exists":
+            expected_names = exp["expected_value"]
+
+            class FunctionDefCollector(ast.NodeVisitor):
+                def __init__(self):
+                    self.function_names = set()
+
+                def visit_FunctionDef(self, node):
+                    self.function_names.add(node.name)
+                    self.generic_visit(node)
+
+            tree = ast.parse(code)
+            visitor = FunctionDefCollector()
+            visitor.visit(tree)
+
+            found_match = False
+            for name in expected_names:
+                if name in visitor.function_names:
+                    found_match = True
+                    break
+            if not found_match:
+                remaining_expectations.append(exp)
+
+        elif exp["operation"] == "if_structure":
+            expected_left_names = exp["expected_value"]["leftNames"]
+            expected_operator = exp["expected_value"]["operator"]
+            expected_right_value = exp["expected_value"]["rightValue"]
+
+            class IfConditionCollector(ast.NodeVisitor):
+                def __init__(self):
+                    self.found = False
+
+                def visit_If(self, node):
+                    if isinstance(node.test, ast.Compare):
+                        if (isinstance(node.test.left, ast.Name) and
+                            node.test.left.id in expected_left_names):
+
+                            operator_map = {
+                                'Eq': '==',
+                                'NotEq': '!=',
+                                'Lt': '<',
+                                'LtE': '<=',
+                                'Gt': '>',
+                                'GtE': '>='
+                            }
+
+                            if len(node.test.ops) == 1:
+                                op_type = type(node.test.ops[0]).__name__
+                                op_symbol = operator_map.get(op_type, None)
+
+                                if (op_symbol == expected_operator and
+                                    len(node.test.comparators) == 1 and
+                                    isinstance(node.test.comparators[0], ast.Constant) and
+                                    node.test.comparators[0].value == expected_right_value):
+                                    self.found = True
+
+                    self.generic_visit(node)
+
+            tree = ast.parse(code)
+            visitor = IfConditionCollector()
+            visitor.visit(tree)
+
+            if not visitor.found:
+                remaining_expectations.append(exp)
+
+        elif exp["operation"] == "loop_structure":
+            expected_loop_type = exp["expected_value"]  # "for" o "while"
+
+            class LoopCollector(ast.NodeVisitor):
+                def __init__(self):
+                    self.found = False
+
+                def visit_For(self, node):
+                    if expected_loop_type == "for":
+                        self.found = True
+                    self.generic_visit(node)
+
+                def visit_While(self, node):
+                    if expected_loop_type == "while":
+                        self.found = True
+                    self.generic_visit(node)
+
+            tree = ast.parse(code)
+            visitor = LoopCollector()
+            visitor.visit(tree)
+
+            if not visitor.found:
                 remaining_expectations.append(exp)
 
     builtins.print = original_print
@@ -133,24 +340,28 @@ def validate_expectations(expectations: Dict[str, List[Dict[str, Union[str, Any]
 
     return remaining_expectations
 
-remaining = validate_expectations(${assert.asPythonDict()},${this.code})
+remaining = validate_expectations(${assert.asPythonDict()}, ${this.code})
 {
     "success": len(remaining) == 0,
     "unmet_expectations": remaining
 }
 `;
-            const jsResult = this.pyodide.runPython(simulationCode).toJs();
 
+            const jsResult = this.pyodide.runPython(simulationCode).toJs();
+            const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
             if (!jsResult.success) {
-                //console.log("Unmet expectations:", jsResult.unmet_expectations);
-                const unmetExpectation = jsResult.unmet_expectations[0];
+                const unmet = jsResult.unmet_expectations[0];
+                console.log("UNMET:", unmet);
                 const failedStep = assert.getExpectations().find(
-                    (exp) => exp.operation === unmetExpectation.operation && exp.expectedValue === unmetExpectation.expected_value
+                    (exp) =>
+                        exp.operation === unmet.operation &&
+                        isEqual(exp.expectedValue, unmet.expected_value)
                 );
+                console.log("FAILED STEP:", failedStep);
                 allResults.push({
                     success: false,
                     description: testCase.description,
-                    error: failedStep ? failedStep.getErrorMessage(lang) : "Error en la simulación",
+                    error: failedStep?.getErrorMessage(lang) ?? unmet.description ?? "Error en la simulación",
                 });
                 break;
             } else {
@@ -160,6 +371,8 @@ remaining = validate_expectations(${assert.asPythonDict()},${this.code})
                     error: null,
                 });
             }
+            console.log("UNMET EXPECTATIONS:", jsResult.unmet_expectations);
+
         }
 
         return allResults;

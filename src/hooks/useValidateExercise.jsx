@@ -104,7 +104,7 @@ export const useValidateExercise = async (exerciseId, editors, lang, postEvent, 
 
         // 1. Validaciones Objetivas
         if (exercise.validations && Array.isArray(exercise.validations)) {
-            const results = await runValidations(code, exercise.validations);
+            const results = await runValidations(code, exercise.validations,exerciseId);
             results.forEach(result => {
                 if (!result.success) {
                     failureReasons.push(result.message);

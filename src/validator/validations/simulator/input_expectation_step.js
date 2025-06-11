@@ -9,4 +9,5 @@ export class InputExpectationStep extends ExpectationStep {
         super("input", simulatedInput, description);
         this.prompt = prompt;
     }
+    
 }
