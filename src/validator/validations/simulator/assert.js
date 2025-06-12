@@ -9,6 +9,7 @@ import { BinOpExpectationStep } from "./bin_op_expectation_step.js";
 import { FunctionExistsExpectationStep } from "./function_exists_expectation_step.js";
 import { IfStructureExpectationStep } from "./if_structure_expectation_step.js";
 import { LoopStructureExpectationStep } from "./loop_structure_expectation_step.js";
+import { PlotExistsExpectationStep } from "./PlotExistsExpectationStep.js";
 
 
 /**
@@ -153,7 +154,17 @@ export class Assert {
         this.expectations.push(step);
         return step;
     }
-
+    /**
+     * Add a plot existence expectation step.
+     * @param {Array} expectedFunctions - The list of expected plot function names.
+     * @param {string} description - The description of the expectation.
+     * @returns {PlotExistsExpectationStep} The created plot existence expectation step.
+     */
+    plotExists(expectedFunctions, description) {
+        const step = new PlotExistsExpectationStep(expectedFunctions, description);
+        this.expectations.push(step);
+        return step;
+    }
     /**
      * Get the list of expectations.
      * @returns {Array} The list of expectations.

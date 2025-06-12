@@ -292,7 +292,7 @@ export const exercises = [
                 # 4.- Transformar el tipo de dato de la variable anterior a texto para poder concatenar el resultado.
                 # 5.- Hacer un print() con el texto → “Tu edad dentro de 18 años será: ______ “`,
     "mainEditor": "main.py",
-    "packages": [],
+    "packages": ['random'],
     "editors": {
       "main.py": {
         "code": "",
@@ -427,6 +427,7 @@ export const exercises = [
     "validationCodeSimulator": {
       "description": "Al ingresar una edad, el programa debería responder con la edad que tendrás dentro de 18 años, usando funciones, listas, diccionarios y módulos.",
       "test": ($) => {
+
         $.variableExists(["edad", "age", "idade"]).catch({
           es: "Se esperaba que se definiera una variable para la edad.",
           en: "Expected a variable for the age.",
@@ -472,17 +473,23 @@ export const exercises = [
           en: "Expected a while loop structure.",
           pt: "Esperava-se uma estrutura de repetição while.",
         });
+        $.moduleUsage('random', 'randint').catch({
+          es: "Se esperaba que se importara el módulo 'random'.",
+          en: "Expected the 'random' module to be imported.",
+          pt: "Esperava-se que o módulo 'random' fosse importado.",
+        });
+        $.plotExists(["scatterplot", "histplot", "plot", "show"]).catch({
+          es: "Se esperaba que se generara un gráfico (plot, show, scatterplot o histplot).",
+          en: "Expected a plot to be generated (plot, show, scatterplot or histplot).",
+          pt: "Esperava-se que fosse gerado um gráfico (plot, show, scatterplot ou histplot).",
+        });
         // $.functionCall("calcular_edad_futura", [25], 43).catch({
         //   es: "Se esperaba que se llamara a la función 'calcular_edad_futura' con 25 y devolviera 43.",
         //   en: "Expected 'calcular_edad_futura' to be called with 25 and return 43.",
         //   pt: "Esperava-se que 'calcular_edad_futura' fosse chamada com 25 e retornasse 43.",
         // });
 
-        $.moduleUsage("math", "floor").catch({
-          es: "Se esperaba que se usara el módulo 'math' y su función 'floor'.",
-          en: "Expected the module 'math' and its 'floor' function to be used.",
-          pt: "Esperava-se que o módulo 'math' e sua função 'floor' fossem usados.",
-        });
+
 
         // $.list([25, 43], "Debe crearse una lista con la edad actual y la futura.").catch({
         //   es: "Se esperaba que se creara una lista con [25, 43].",

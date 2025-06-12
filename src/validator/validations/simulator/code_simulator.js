@@ -176,17 +176,24 @@ def validate_expectations(expectations, code):
         elif exp["operation"] == "module_usage":
             module_name = exp["expected_value"]["moduleName"]
             expected_usage = exp["expected_value"]["expectedUsage"]
+
             if module_name not in sys.modules:
+                print(f"DEBUG: Module {module_name} NOT in sys.modules")
                 remaining_expectations.append(exp)
                 continue
+
             module_obj = sys.modules[module_name]
+            module_dir = dir(module_obj)
+
             if isinstance(expected_usage, list):
                 for attr in expected_usage:
-                    if not hasattr(module_obj, attr):
+                    if attr not in module_dir:
+                        print(f"DEBUG: Attribute {attr} NOT FOUND in module {module_name}")
                         remaining_expectations.append(exp)
                         break
             else:
-                if not hasattr(module_obj, expected_usage):
+                if expected_usage not in module_dir:
+                    print(f"DEBUG: Attribute {expected_usage} NOT FOUND in module {module_name}")
                     remaining_expectations.append(exp)
 
         elif exp["operation"] == "list":
@@ -334,7 +341,41 @@ def validate_expectations(expectations, code):
 
             if not visitor.found:
                 remaining_expectations.append(exp)
+        elif exp["operation"] == "plot_exists":
+            expected_functions = exp["expected_value"]  # list of function names like "plot", "show", "scatterplot", etc.
 
+            class PlotCallCollector(ast.NodeVisitor):
+                def __init__(self):
+                    self.called_functions = set()
+
+                def visit_Call(self, node):
+                    # Detect function call names
+                    func_name = ""
+                    if isinstance(node.func, ast.Attribute):
+                        func_name = node.func.attr
+                    elif isinstance(node.func, ast.Name):
+                        func_name = node.func.id
+
+                    if func_name:
+                        self.called_functions.add(func_name)
+
+                    self.generic_visit(node)
+
+            tree = ast.parse(code)
+            visitor = PlotCallCollector()
+            visitor.visit(tree)
+
+            print("DEBUG: Plot functions found in code:", visitor.called_functions)
+
+            found_match = False
+            for func in expected_functions:
+                if func in visitor.called_functions:
+                    found_match = True
+                    break
+
+            if not found_match:
+                remaining_expectations.append(exp)
+                
     builtins.print = original_print
     builtins.input = original_input
 
@@ -346,6 +387,7 @@ remaining = validate_expectations(${assert.asPythonDict()}, ${this.code})
     "unmet_expectations": remaining
 }
 `;
+
 
             const jsResult = this.pyodide.runPython(simulationCode).toJs();
             const isEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);

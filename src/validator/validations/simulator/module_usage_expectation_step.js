@@ -5,11 +5,14 @@ import { ExpectationStep } from "./expectation_step.js";
  */
 export class ModuleUsageExpectationStep extends ExpectationStep {
     constructor(moduleName, expectedUsage, description) {
-        super("module_usage", {
+        const expectedValue = {
             moduleName,
             expectedUsage
-        }, description);
+        };
+        super("module_usage", expectedValue, description);
         this.moduleName = moduleName;
         this.expectedUsage = expectedUsage;
+        this.expectedValue = expectedValue; // ← para coherencia con asPythonDict()
     }
 }
+
